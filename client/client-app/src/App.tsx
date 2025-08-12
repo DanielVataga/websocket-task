@@ -1,26 +1,49 @@
-import React, { useEffect } from 'react';
-import './App.css';
+import React, { useEffect, useState } from "react";
 
-function App() {
+type PollResult = {
+  ok: boolean;
+  status?: number;
+  body?: any;
+  error?: string;
+  fetchedAt: string;
+};
+
+type Snapshot = {
+  timestamp: string;
+  regions: Record<string, PollResult>;
+  __changed?: Record<string, boolean>;
+};
+
+export default function App() {
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8080");
+    const ws = new WebSocket("ws://localhost:8080");
 
-    socket.onopen = () => {
-      console.log("Connected to server");
-      socket.send("Hello from React client!");
+    ws.onopen = () => {
+      setConnected(true);
     };
 
-    socket.onmessage = (event) => {
-      console.log("Message from server:", event.data);
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === "snapshot") {
+          console.log("Received snapshot:", msg.data);
+
+          setSnapshot(msg.data);
+        }
+      } catch (err) {
+        console.error("Invalid message", err);
+      }
     };
 
-    socket.onclose = () => {
-      console.log("Disconnected from server");
+    ws.onclose = () => {
+      setConnected(false);
     };
 
     return () => {
-      socket.close();
+      ws.close();
     };
   }, []);
 
@@ -32,5 +55,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
