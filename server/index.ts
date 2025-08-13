@@ -1,4 +1,4 @@
-import { WebSocketServer } from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import axios from 'axios';
 import type { Snapshot, PollResult } from './types/snapshot';
 import dotenv from 'dotenv';
@@ -81,13 +81,13 @@ console.log(`WebSocket server listening on ws://localhost:${WS_PORT}`);
 
 let lastSnapshot: Snapshot | undefined = undefined;
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws: WebSocket) => {
   console.log('Client connected');
   if (lastSnapshot) {
     ws.send(JSON.stringify({ type: 'snapshot', data: lastSnapshot }));
   }
 
-  ws.on('message', (message) => {
+  ws.on('message', (message: string) => {
     try {
       const m = message.toString();
       if (m === 'request_snapshot' && lastSnapshot) {
