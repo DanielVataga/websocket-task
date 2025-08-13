@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
     "dev": "tsc-watch -p tsconfig.json --onSuccess \"npm run start:server\"",
     "start:server": "node dist/index.js"
   },
