@@ -55,7 +55,9 @@ export default function App() {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket(process.env.REACT_APP_WS_URL || "ws://localhost:8080");
+    const ws = new WebSocket(
+      process.env.REACT_APP_WS_URL || "ws://localhost:8080"
+    );
 
     ws.onopen = () => {
       setConnected(true);
@@ -86,7 +88,7 @@ export default function App() {
   const regionEntries = snapshot ? Object.entries(snapshot.regions) : [];
 
   return (
-    <div className="bg-background text-foreground min-h-screen space-y-4 p-4">
+    <div className="bg-background text-foreground min-h-screen space-y-4 p-4 overflow-x-hidden">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">WebSocket Snapshot Viewer</h1>
         <p className="text-muted-foreground">
@@ -95,13 +97,15 @@ export default function App() {
       </div>
       {snapshot ? (
         <Tabs defaultValue={regionEntries[0]?.[0]} className="w-full">
-          <TabsList className="overflow-x-auto">
-            {regionEntries.map(([region]) => (
-              <TabsTrigger key={region} value={region}>
-                {region}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList >
+              {regionEntries.map(([region]) => (
+                <TabsTrigger key={region} value={region}>
+                  {region}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           {regionEntries.map(([region, result]) => (
             <TabsContent key={region} value={region} className="space-y-4 mt-5">
@@ -109,7 +113,6 @@ export default function App() {
               <WorkersTable
                 result={result.body?.results.stats.server.workers}
               />
-              
             </TabsContent>
           ))}
         </Tabs>
