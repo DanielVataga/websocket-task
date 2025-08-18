@@ -10,7 +10,7 @@ export default function App() {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket(
+    let ws = new WebSocket(
       process.env.REACT_APP_WS_URL || "ws://localhost:8080"
     );
 
@@ -28,6 +28,28 @@ export default function App() {
         }
       } catch (err) {
         console.error("Invalid message", err);
+      }
+    };
+
+    ws.onerror = () => {
+      console.error("WebSocket error, trying localhost...");
+      if (process.env.REACT_APP_WS_URL) {
+        ws.close();
+        ws = new WebSocket("ws://localhost:8080");
+
+        ws.onopen = () => setConnected(true);
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === "snapshot") {
+              console.log("Received snapshot(localhost):", msg.data);
+              setSnapshot(msg.data);
+            }
+          } catch (err) {
+            console.error("Invalid message", err);
+          }
+        };
+        ws.onclose = () => setConnected(false);
       }
     };
 
@@ -53,7 +75,7 @@ export default function App() {
       {snapshot ? (
         <Tabs defaultValue={regionEntries[0]?.[0]} className="w-full">
           <div className="overflow-x-auto">
-            <TabsList >
+            <TabsList>
               {regionEntries.map(([region]) => (
                 <TabsTrigger key={region} value={region}>
                   {region}
